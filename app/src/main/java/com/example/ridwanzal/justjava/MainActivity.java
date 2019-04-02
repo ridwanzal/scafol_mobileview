@@ -42,4 +42,14 @@ public class MainActivity extends AppCompatActivity {
 //        webView.clearHistory();
         webView.loadUrl("http://mobile.scafol.id");
     }
+
+    @Override
+    public void onBackPressed() {
+        WebView webView = (WebView) findViewById(R.id.webview);
+        if(webView.canGoBack()){
+            webView.goBack();
+        }else{
+            super.onBackPressed();
+        }
+    }
 }
