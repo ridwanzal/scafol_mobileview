@@ -1,8 +1,11 @@
 package com.example.ridwanzal.justjava;
 
+import android.animation.ObjectAnimator;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -12,18 +15,25 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SwipeRefreshLayout.OnRefreshListener{
 
-    ProgressBar webProgress;
+    private ProgressBar webProgress;
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private WebView webView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web);
-        WebView webView = (WebView) findViewById(R.id.webview);
+        webView = (WebView) findViewById(R.id.webview);
         webProgress = findViewById(R.id.progressBar);
+        swipeRefreshLayout = findViewById(R.id.swiperefresh);
+        swipeRefreshLayout.setOnRefreshListener(this);
         webProgress.setMax(100);
         webProgress.setProgressTintList(ColorStateList.valueOf(Color.parseColor("#ffda09")));
+
+        ObjectAnimator anim = ObjectAnimator.ofInt(webView, "scrollY", webView.getScrollY(), 0);
+        anim.setDuration(500).start();
 
         webView.getSettings().setLoadsImagesAutomatically(true);
         webView.getSettings().setJavaScriptEnabled(true);
@@ -39,6 +49,20 @@ public class MainActivity extends AppCompatActivity {
             public void onProgressChanged(WebView view, int newProgress) {
                 super.onProgressChanged(view, newProgress);
                 webProgress.setProgress(newProgress);
+            }
+        });
+
+        webView.setWebViewClient(new WebViewClient(){
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                swipeRefreshLayout.setRefreshing(true);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                swipeRefreshLayout.setRefreshing(false);
             }
         });
 
@@ -68,5 +92,11 @@ public class MainActivity extends AppCompatActivity {
         }else{
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public void onRefresh() {
+        webView.reload();
+        swipeRefreshLayout.setRefreshing(false);
     }
 }
